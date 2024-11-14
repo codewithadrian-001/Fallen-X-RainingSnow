@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen X heartbeat with raining snow</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #dd772a;
+            font-family: Arial, sans-serif;
+        }
+
+        #playButton {
+            position: absolute;
+            top: 50px;
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #96CEB4;
+            color: rgb(59, 56, 56);
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: 600;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #playButton:hover {
+            background-color: #c2185b;
+            color: white;
+          
+        }
+        
+    </style>
+</head>
+<body>
+    <canvas id="heartCanvas" width="600" height="600"></canvas>
+    <audio id="backgroundMusic" loop>
+        <source src="lola.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+    <button id="playButton">Click Me</button>
+
+    <script>
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        const centerX = 300;
+        const centerY = 300;
+        const scale = 10;
+
+        let currentIndex = 0;
+        const points = [];
+        for (let t = 0; t < 2 * Math.PI; t += 0.01) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            points.push({
+                x: centerX + x * scale,
+                y: centerY - y * scale
+            });
+        }
+
+        const images = [];
+        const imagePaths = ['JSA1.png', 'JSA2.png', 'JSA3.png', 'JSA4.png'];
+        let currentImageIndex = 0;
+        let imageOpacity = 0;
+
+        let imagesLoaded = 0;
+        imagePaths.forEach((path) => {
+            const img = new Image();
+            img.src = path;
+            img.onload = () => {
+                images.push(img);
+                imagesLoaded++;
+                if (imagesLoaded === imagePaths.length) {
+                    document.getElementById('playButton').disabled = false;
+                }
+            };
+        });
+
+        // Snowfall Effect
+        const stars = [];
+        function createSnowfall() {
+            for (let i = 0; i < 50; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    speedX: Math.random() * 0.5 - 0.25,
+                    speedY: Math.random() * 1.5 + 1,
+                    size: Math.random() * 3 + 1,
+                });
+            }
+        }
+
+        function drawSnowfall() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Keep the canvas background transparent
+
+            stars.forEach((star, index) => {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                star.x += star.speedX;
+                star.y += star.speedY;
+
+                if (star.y > canvas.height) {
+                    stars[index] = {
+                        x: Math.random() * canvas.width,
+                        y: 0,
+                        speedX: Math.random() * 0.5 - 0.25,
+                        speedY: Math.random() * 1.5 + 1,
+                        size: Math.random() * 3 + 1,
+                    };
+                }
+            });
+        }
+
+        function drawHeartOutline(scaleFactor) {
+            ctx.strokeStyle = '#EB3678';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for (let i = 0; i < points.length - 1; i++) {
+                const scaledX = (points[i].x - centerX) * scaleFactor + centerX;
+                const scaledY = (points[i].y - centerY) * scaleFactor + centerY;
+                const nextScaledX = (points[i + 1].x - centerX) * scaleFactor + centerX;
+                const nextScaledY = (points[i + 1].y - centerY) * scaleFactor + centerY;
+
+                ctx.moveTo(scaledX, scaledY);
+                ctx.lineTo(nextScaledX, nextScaledY);
+            }
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        let flowerRotationAngle = 0; // Variable to track the rotation angle for flowers
+
+        // Flower color sequence (red, light red, white, yellow, and then back to red)
+        const flowerColorSequence = [
+            '#FF0000',  // Red
+            '#FF7F7F',  // Light Red
+            '#FFFFFF',  // White
+            '#FFFF00',  // Yellow
+        ];
+
+        let currentColorIndex = 0;
+
+        function startImageAppearance() {
+            const fadeInterval = setInterval(() => {
+                drawSnowfall();
+                drawHeartOutline(1); // Heart doesn't scale in this phase
+                drawFlowers(); 
+
+                if (imageOpacity < 1) {
+                    imageOpacity += 0.05;
+                } else {
+                    clearInterval(fadeInterval);
+                    setTimeout(() => {
+                        currentImageIndex = (currentImageIndex + 1) % images.length;
+                        imageOpacity = 0;
+
+                        // Change background image to match current heart image
+                        document.body.style.backgroundImage = `url(${imagePaths[currentImageIndex]})`;
+                        document.body.style.backgroundSize = 'cover';
+                        document.body.style.backgroundPosition = 'center';
+
+                        startImageAppearance();
+                    }, 0);
+                }
+            }, 50);
+        }
+
+        function drawFlowers() {
+            // Set a constant color for the flowers
+            const flowerColor = 'white'; //brown color, or set your preferred color here
+
+            for (let i = 0; i < 5; i++) {
+                const flowerX = centerX - 50 + i * 25;
+                const flowerY = centerY - 150;
+
+                ctx.save(); // Save current canvas state
+                ctx.translate(flowerX, flowerY); // Move origin to flower center
+                ctx.rotate(flowerRotationAngle); // Apply rotation to the flower
+
+                // Apply the constant color to the flower
+                ctx.fillStyle = flowerColor;
+                ctx.beginPath();
+                ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = 0; j < 5; j++) {
+                    const angle = (j * 2 * Math.PI) / 5;
+                    const petalX = 15 * Math.cos(angle);
+                    const petalY = 15 * Math.sin(angle);
+
+                    ctx.beginPath();
+                    ctx.arc(petalX, petalY, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore(); // Restore canvas state
+            }
+
+            flowerRotationAngle += 0.02; // Increment the rotation angle for continuous rotation
+        }
+
+        function animateHeartRate() {
+            let scaleFactor = 1;
+            let growing = true;
+
+            const heartbeatInterval = setInterval(() => {
+                drawSnowfall();
+                drawFlowers(); 
+                if (growing) {
+                    scaleFactor += 0.05;
+                    if (scaleFactor >= 1.2) growing = false;
+                } else {
+                    scaleFactor -= 0.05;
+                    if (scaleFactor <= 1) growing = true;
+                }
+
+                drawHeartOutline(scaleFactor); // Only the heart scales here
+            }, 50);
+        }
+
+        function drawTextInHeart() {
+            ctx.font = "400 40px Courier New, Courier, monospace"; // Set a nice font for the text
+            ctx.fillStyle = "white"; // Set text color
+            ctx.textAlign = "center"; // Center align the text horizontally
+            ctx.textBaseline = "middle"; // Center align the text vertically
+            ctx.fillText("Jessa", centerX, centerY); // Draw text at the heart's center
+        }
+
+        function startImageAppearance() {
+            const fadeInterval = setInterval(() => {
+                drawSnowfall();
+                drawHeartOutline(1); // Heart doesn't scale in this phase
+                drawFlowers(); 
+                drawTextInHeart(); // Ensure text stays visible
+
+                if (imageOpacity < 1) {
+                    imageOpacity += 0.05;
+                } else {
+                    clearInterval(fadeInterval);
+                    setTimeout(() => {
+                        currentImageIndex = (currentImageIndex + 1) % images.length;
+                        imageOpacity = 0;
+
+                        // Change background image to match current heart image
+                        document.body.style.backgroundImage = `url(${imagePaths[currentImageIndex]})`;
+                        document.body.style.backgroundSize = 'cover';
+                        document.body.style.backgroundPosition = 'center';
+
+                        startImageAppearance();
+                    }, 0);
+                }
+            }, 50);
+        }
+
+        function animateHeartRate() {
+            let scaleFactor = 1;
+            let growing = true;
+
+            const heartbeatInterval = setInterval(() => {
+                drawSnowfall();
+                drawFlowers(); 
+                drawTextInHeart(); // Ensure text stays visible in each animation frame
+
+                if (growing) {
+                    scaleFactor += 0.05;
+                    if (scaleFactor >= 1.2) growing = false;
+                } else {
+                    scaleFactor -= 0.05;
+                    if (scaleFactor <= 1) growing = true;
+                }
+
+                drawHeartOutline(scaleFactor); // Only the heart scales here
+            }, 50);
+        }
+
+        document.getElementById('playButton').addEventListener('click', function() {
+            const audio = document.getElementById('backgroundMusic');
+            audio.play();
+            this.style.display = 'none';
+
+            createSnowfall();
+            let drawInterval = setInterval(() => {
+                if (currentIndex < points.length - 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(points[currentIndex].x, points[currentIndex].y);
+                    ctx.lineTo(points[currentIndex + 1].x, points[currentIndex + 1].y);
+                    ctx.strokeStyle = '#d32f2f';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.closePath();
+                    currentIndex++;
+                } else {
+                    clearInterval(drawInterval);
+                    drawFlowers(); // Draw flowers after heart is completed
+                    drawTextInHeart(); // Draw the text inside the heart after completion
+
+                    startImageAppearance(); // Start changing the background image
+                    setTimeout(() => {
+                        animateHeartRate();
+                    }, 500);
+                }
+            }, 20);
+        });
+
+    </script>
+</body>
+</html>

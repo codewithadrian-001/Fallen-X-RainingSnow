@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fallen X heartbeat</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #dd772a;
+            font-family: Arial, sans-serif;
+        }
+
+        #playButton {
+            position: absolute;
+            top: 50px;
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #96CEB4;
+            color: rgb(59, 56, 56);
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            font-weight: 600;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #playButton:hover {
+            background-color: #c2185b;
+            color: white;
+          
+        }
+        
+        #cat-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            background-color: lightyellow;
+            border: 2px solid #333;
+            border-radius: 15px;
+            text-align: center;
+        }
+        #message-box {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 50px;
+            background-color: #ffccff;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            text-align: center;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        .cat {
+            margin-top: 60px;
+            font-size: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div id="cat-container">
+        <div id="message-box">Hi, Jessa</div>
+        <div class="cat">🐱</div>
+    </div>
+
+    <script>
+
+        const messages = [
+            "Hi, Jessa",
+            "You're the best part of my day! 😊",
+            "Did you know you make everything better? 💫",
+            "You’re even cuter than this cat! 🐱",
+            "You’re always on my mind. ❤️",
+            "You light up every room you’re in! 🌟",
+            "I smile every time I think of you. 😊",
+            "Just wanted to remind you how amazing you are! 💖",
+            "If I could give you the world, I would! 🌎",
+            "Being around you makes me so happy! 😊",
+            "I’m lucky to know someone as wonderful as you. 💫",
+            "Just thinking about you brightens my day. ☀️",
+            "Hope this message makes you smile as much as you make me smile! 😄",
+            "You make everything feel right. 💕",
+            "Can’t wait to see you again! 🥰",
+            "Just a reminder: you’re amazing! 😘",
+            "Enjoyyy!!!"
+        ];
+
+        let currentMessageIndex = 0;
+
+        const messageBox = document.getElementById('message-box');
+        const catContainer = document.getElementById('cat-container');
+
+        // Change message every 5 seconds
+        const messageInterval = setInterval(() => {
+            currentMessageIndex = (currentMessageIndex + 1) % messages.length;
+            messageBox.textContent = messages[currentMessageIndex];
+        }, 4000);
+
+        // Remove the cat after 30 seconds
+        setTimeout(() => {
+            clearInterval(messageInterval);
+            catContainer.style.display = 'none';
+            window.location.href = 'fallen.html'; 
+        }, 68000);
+    </script>
+</body>
+</html>
